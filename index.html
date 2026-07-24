@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Het Verdwenen Kompas van Liora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Space+Mono&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233a;
+    --navy-light:#1f3352;
+    --parchment:#ece2c8;
+    --parchment-dark:#d8c9a3;
+    --gold:#caa243;
+    --gold-bright:#e6c66b;
+    --green:#3f5d4f;
+    --wax:#8b2e2e;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:var(--navy);
+    color:var(--parchment);
+    font-family:'Nunito',sans-serif;
+    min-height:100vh;
+  }
+  body{
+    background-image:radial-gradient(circle at 20% 10%, rgba(255,255,255,0.05), transparent 40%),
+                      radial-gradient(circle at 80% 90%, rgba(255,255,255,0.04), transparent 40%);
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+    min-height:100vh;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-size:26px;
+    line-height:1.25;
+    color:var(--gold-bright);
+    text-align:center;
+    margin:0 0 6px;
+  }
+  .subtitle{
+    text-align:center;
+    font-size:14px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--parchment-dark);
+    margin:0 0 28px;
+  }
+  .card{
+    background:var(--navy-light);
+    border:1px solid rgba(230,198,107,0.25);
+    border-radius:14px;
+    padding:22px 20px;
+    margin-bottom:20px;
+  }
+  .story{
+    font-family:'Playfair Display',serif;
+    font-size:19px;
+    line-height:1.55;
+    color:var(--parchment);
+  }
+  .story strong{color:var(--gold-bright);}
+  button{
+    display:block;
+    width:100%;
+    font-family:'Nunito',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    padding:15px 18px;
+    border-radius:10px;
+    border:none;
+    background:var(--gold);
+    color:var(--navy);
+    cursor:pointer;
+    margin-top:14px;
+  }
+  button:active{transform:scale(0.98);}
+  button.secondary{
+    background:transparent;
+    border:1px solid rgba(236,226,200,0.4);
+    color:var(--parchment);
+  }
+  input[type=text]{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    font-family:'Space Mono',monospace;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    border-radius:10px;
+    border:1px solid var(--gold);
+    background:rgba(0,0,0,0.2);
+    color:var(--parchment);
+    margin-top:10px;
+  }
+  input[type=text]::placeholder{color:var(--parchment-dark);opacity:0.6;}
+  .compass-zone{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin:10px 0 22px;
+  }
+  .compass{width:170px;height:170px;}
+  .needle{transform-origin:100px 100px;}
+  .status-text{
+    margin-top:12px;
+    font-size:15px;
+    font-weight:600;
+    text-align:center;
+  }
+  .status-cold{color:#7fa8d9;}
+  .status-warm{color:var(--gold-bright);}
+  .status-hot{color:#e2795a;}
+  .radio-box{
+    background:rgba(0,0,0,0.25);
+    border:1px dashed var(--gold);
+    border-radius:10px;
+    padding:16px;
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    color:var(--parchment-dark);
+    margin-top:10px;
+    line-height:1.6;
+  }
+  .error-msg{
+    color:#e2795a;
+    font-size:14px;
+    margin-top:10px;
+    text-align:center;
+  }
+  .progress{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    margin-bottom:22px;
+  }
+  .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:rgba(236,226,200,0.25);
+  }
+  .dot.done{background:var(--gold);}
+  .task-photo{
+    background:rgba(0,0,0,0.2);
+    border-radius:10px;
+    padding:16px;
+    margin-top:8px;
+  }
+  .task-photo ol{margin:8px 0 0;padding-left:20px;line-height:1.7;}
+  .footer-note{
+    text-align:center;
+    font-size:12px;
+    color:var(--parchment-dark);
+    opacity:0.6;
+    margin-top:30px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+var STOPS = [
+  {
+    id:1, name:"De speeltuin", type:"photo",
+    lat:51.93838, lng:5.9211, radius:50,
+    arriveText:"Hier voelt het kompas voor het eerst weer warm. Voordat het spoor verder gaat, wil het bewijs zien dat de groep compleet is."
+  },
+  {
+    id:2, name:"Het klim/balanstoestel", type:"auto",
+    lat:51.93707, lng:5.92248, radius:50,
+    arriveText:"Hier ligt een letter verstopt, maar hij laat zich niet zomaar vinden. Vorm een treintje door elkaar vast te houden, op welke manier dan ook. Iedereen moet het toestel oversteken zonder eraf te stappen en zonder elkaar los te laten. Val iemand eraf, of laat iemand los, dan begint de hele groep opnieuw."
+  },
+  {
+    id:3, name:"Het grote park", type:"auto",
+    lat:51.93976, lng:5.92422, radius:60,
+    arriveText:"Hier is meer te doen. Eerst de bekertjesronde: een bekertje gaat rond. Om de beurt vul je het bij de pomp, dan de kabelbaan over, dan het klimrek over, zonder morsen. Mors je, dan vul je opnieuw en doe je alleen die ene hindernis over. Pas als iedereen is geweest, komen de letters vrij. Daarna: 10 minuten vrij tikkertje, gewoon omdat het leuk is."
+  },
+  {
+    id:4, name:"Het pondje", type:"auto",
+    lat:51.93865, lng:5.91775, radius:50,
+    arriveText:"Het pondje over de sloot houdt het laatste geheim vast. Max 2 kinderen tegelijk op het pondje. Elk kind mag maximaal 2 keer oversteken. Toch moet iedereen aan de overkant komen, dus verzin samen een systeem. Zodra iedereen over is, krijg je de laatste letter."
+  },
+  {
+    id:5, name:"Thuis", type:"final",
+    lat:51.93827, lng:5.92215, radius:40,
+    arriveText:"Het kompas is terug op de plek waar alles begon. Leg alle letters op tafel en kijk wat ze samen vertellen."
+  }
+];
+
+var state = {
+  step:-1,
+  watchId:null,
+  distance:null,
+  arrivedAtCurrent:false,
+  gpsError:null
+};
+
+function haversine(lat1,lon1,lat2,lon2){
+  var R=6371000;
+  var dLat=(lat2-lat1)*Math.PI/180;
+  var dLon=(lon2-lon1)*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+
+        Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+        Math.sin(dLon/2)*Math.sin(dLon/2);
+  var c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  return R*c;
+}
+
+function startWatch(){
+  if(!navigator.geolocation){
+    state.gpsError="Deze telefoon of browser ondersteunt geen locatie.";
+    render();
+    return;
+  }
+  state.watchId = navigator.geolocation.watchPosition(function(pos){
+    state.gpsError=null;
+    var stop = STOPS[state.step];
+    if(stop && stop.type!=="final"){
+      var d = haversine(pos.coords.latitude,pos.coords.longitude,stop.lat,stop.lng);
+      state.distance = d;
+      if(d<=stop.radius){ state.arrivedAtCurrent=true; }
+      render();
+    } else if(stop && stop.type==="final"){
+      var d = haversine(pos.coords.latitude,pos.coords.longitude,stop.lat,stop.lng);
+      state.distance = d;
+      if(d<=stop.radius){ state.arrivedAtCurrent=true; }
+      render();
+    }
+  }, function(err){
+    state.gpsError="Locatie lukt niet automatisch. Gebruik de knop hieronder.";
+    render();
+  }, {enableHighAccuracy:true, maximumAge:2000, timeout:10000});
+}
+
+function beginHunt(){
+  state.step = 0;
+  state.distance = null;
+  state.arrivedAtCurrent = false;
+  startWatch();
+  render();
+}
+
+function nextStop(){
+  state.step += 1;
+  state.distance = null;
+  state.arrivedAtCurrent = false;
+  render();
+}
+
+function forceArrive(){
+  state.arrivedAtCurrent = true;
+  render();
+}
+
+function checkCode(){
+  var input = document.getElementById('codeInput');
+  var stop = STOPS[state.step];
+  var val = (input.value||"").trim().toUpperCase();
+  if(val === stop.code){
+    document.getElementById('codeError').style.display='none';
+    nextStop();
+  } else {
+    document.getElementById('codeError').style.display='block';
+  }
+}
+
+function proximityLabel(){
+  if(state.distance===null) return {label:"Kompas zoekt...", cls:"status-cold", speed:"6s"};
+  if(state.distance>200) return {label:"IJskoud", cls:"status-cold", speed:"6s"};
+  if(state.distance>80) return {label:"Kouder", cls:"status-cold", speed:"4s"};
+  if(state.distance>40) return {label:"Warm", cls:"status-warm", speed:"2.2s"};
+  return {label:"Heet!", cls:"status-hot", speed:"1s"};
+}
+
+function compassSvg(spinSpeed, colorClass){
+  return '<svg class="compass" viewBox="0 0 200 200">' +
+    '<circle cx="100" cy="100" r="92" fill="none" stroke="rgba(236,226,200,0.3)" stroke-width="2"/>' +
+    '<circle cx="100" cy="100" r="70" fill="none" stroke="rgba(236,226,200,0.15)" stroke-width="1"/>' +
+    '<text x="100" y="24" fill="#ece2c8" font-size="13" text-anchor="middle" font-family="Space Mono, monospace">N</text>' +
+    '<text x="100" y="184" fill="#ece2c8" font-size="13" text-anchor="middle" font-family="Space Mono, monospace">Z</text>' +
+    '<text x="18" y="105" fill="#ece2c8" font-size="13" text-anchor="middle" font-family="Space Mono, monospace">W</text>' +
+    '<text x="182" y="105" fill="#ece2c8" font-size="13" text-anchor="middle" font-family="Space Mono, monospace">O</text>' +
+    '<g class="needle" style="animation: spin ' + spinSpeed + ' linear infinite;">' +
+    '<polygon points="100,30 108,100 100,110 92,100" fill="' + (colorClass==='status-hot' ? '#e2795a' : colorClass==='status-warm' ? '#e6c66b' : '#7fa8d9') + '"/>' +
+    '<polygon points="100,170 108,100 100,90 92,100" fill="rgba(236,226,200,0.35)"/>' +
+    '</g>' +
+    '<circle cx="100" cy="100" r="6" fill="#ece2c8"/>' +
+    '</svg>' +
+    '<style>@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}</style>';
+}
+
+function render(){
+  var app = document.getElementById('app');
+  var html = '';
+
+  if(state.step === -1){
+    html += '<h1>Het verdwenen kompas<br>van Liora</h1>';
+    html += '<div class="subtitle">een geheime speurtocht</div>';
+    html += '<div class="card story">';
+    html += 'Vanmorgen ontdekte Liora iets vreemds. Het kompas dat haar altijd de weg wees, bij elk avontuur, is spoorloos verdwenen. Precies nu, vlak voor het allergrootste avontuur van allemaal.<br><br>';
+    html += 'Iemand heeft sporen achtergelaten door de wijk. Volg het kompas op je scherm. Wordt het warm, dan zit je goed.';
+    html += '</div>';
+    html += '<button onclick="beginHunt()">Open de kaart</button>';
+    html += '<div class="footer-note">Zet je locatie aan als je telefoon erom vraagt.</div>';
+    app.innerHTML = html;
+    return;
+  }
+
+  var stop = STOPS[state.step];
+  var dotsHtml = '<div class="progress">';
+  for(var i=0;i<STOPS.length;i++){
+    dotsHtml += '<div class="dot ' + (i<state.step || (i===state.step && state.arrivedAtCurrent) ? 'done':'') + '"></div>';
+  }
+  dotsHtml += '</div>';
+  html += dotsHtml;
+
+  if(!state.arrivedAtCurrent){
+    var prox = proximityLabel();
+    html += '<div class="compass-zone">';
+    html += compassSvg(prox.speed, prox.cls);
+    html += '<div class="status-text ' + prox.cls + '">' + prox.label + '</div>';
+    html += '</div>';
+    html += '<div class="card story">Volg het kompas. Ergens in de buurt wacht het volgende spoor.</div>';
+    if(state.gpsError){
+      html += '<div class="error-msg">' + state.gpsError + '</div>';
+    }
+    html += '<button class="secondary" onclick="forceArrive()">We denken dat we er zijn</button>';
+  } else {
+    html += '<div class="card story">' + stop.arriveText + '</div>';
+
+    if(stop.type === 'photo'){
+      html += '<div class="task-photo">';
+      html += '<strong style="color:var(--gold-bright)">De foto-opdracht:</strong>';
+      html += '<ol>';
+      html += '<li>Zoek iemand die een foto van de groep kan maken.</li>';
+      html += '<li>Pose 1: sta stil als standbeelden, alsof de tijd stopt.</li>';
+      html += '<li>Pose 2: vorm samen een geheim symbool met je handen.</li>';
+      html += '<li>Pose 3: vorm met je hele lichaam een pijl die naar het volgende geheim wijst.</li>';
+      html += '<li>Pose 4: een gezellige groepsfoto.</li>';
+      html += '<li>Stuur alle foto\'s naar mama.</li>';
+      html += '</ol>';
+      html += '</div>';
+      html += '<button onclick="nextStop()">Foto\'s verstuurd, verder!</button>';
+    } else if(stop.type === 'code'){
+      html += '<div class="radio-box">Iedereen over? Zet de walkie-talkie aan op het afgesproken kanaal en wacht op de letter.</div>';
+      html += '<input type="text" id="codeInput" placeholder="letter" maxlength="1">';
+      html += '<div class="error-msg" id="codeError" style="display:none">Dat is hem niet. Luister nog eens goed.</div>';
+      html += '<button onclick="checkCode()">Bevestig</button>';
+    } else if(stop.type === 'auto'){
+      html += '<button onclick="nextStop()">Verder</button>';
+    } else if(stop.type === 'final'){
+      html += '<div class="card story" style="margin-top:16px;">Leg alle letters op tafel: U, S, R, C, U, H. Jullie hebben 60 seconden om er samen een woord van te maken. Is het woord gevonden, dan wijst het naar de plek waar het echte kompas ligt. Maar die plek geeft nog niet zomaar zijn geheim prijs.</div>';
+    }
+  }
+
+  app.innerHTML = html;
+}
+
+render();
+</script>
+</body>
+</html>
